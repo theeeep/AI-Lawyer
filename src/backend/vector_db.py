@@ -25,17 +25,18 @@ def load_pdf(file_path):
 def process_uploaded_document(file_path):
     # Load the PDF
     documents = load_pdf(file_path)
-    
+
     # Create chunks from the documents
     text_chunks = create_chunks(documents)
-    
+
     # Create and save vector database
     embeddings = get_embedding_model(ollama_model)
     faiss_db = FAISS.from_documents(text_chunks, embeddings)
-    
+
     # Save with proper serialization settings
     faiss_db.save_local(FAISS_DB_PATH)
     return faiss_db
+
 
 # Create Chunks
 def create_chunks(documents):

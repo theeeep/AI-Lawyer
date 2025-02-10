@@ -1,10 +1,9 @@
 import dotenv
+from langchain_community.vectorstores import FAISS
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
 
-
-from langchain_community.vectorstores import FAISS
-from src.backend.vector_db import get_embedding_model, FAISS_DB_PATH, ollama_model
+from src.backend.vector_db import FAISS_DB_PATH, get_embedding_model, ollama_model
 
 dotenv.load_dotenv()
 
@@ -17,11 +16,12 @@ def load_vector_db():
         return FAISS.load_local(
             FAISS_DB_PATH,
             get_embedding_model(ollama_model),
-            allow_dangerous_deserialization=True  # Safe since we create and load the database locally
+            allow_dangerous_deserialization=True,  # Safe since we create and load the database locally
         )
     except Exception as e:
         print(f"Error loading vector database: {e}")
         return None
+
 
 # Retrieve Docs
 def retreive_docs(query):
@@ -29,10 +29,12 @@ def retreive_docs(query):
     if faiss_db is None:
         print("No vector database found. Please upload a document first.")
         return []
-    
+
     try:
         # Get relevant documents with similarity search
-        docs = faiss_db.similarity_search(query, k=4)  # Retrieve top 4 most relevant chunks
+        docs = faiss_db.similarity_search(
+            query, k=4
+        )  # Retrieve top 4 most relevant chunks
         if not docs:
             print(f"No relevant documents found for query: {query}")
         return docs
@@ -43,17 +45,19 @@ def retreive_docs(query):
 
 def get_context(documents):
     if not documents:
-        return "No relevant documents found. Please ensure a document has been uploaded."
-    
+        return (
+            "No relevant documents found. Please ensure a document has been uploaded."
+        )
+
     # Join document contents with clear separation and metadata
     contexts = []
     for doc in documents:
         # Add page content with metadata if available
         context = f"Content: {doc.page_content}"
-        if hasattr(doc.metadata, 'page') and doc.metadata['page']:
+        if hasattr(doc.metadata, "page") and doc.metadata["page"]:
             context = f"[Page {doc.metadata['page']}] {context}"
         contexts.append(context)
-    
+
     return "\n\n---\n\n".join(contexts)
 
 
@@ -69,13 +73,13 @@ Answer:
 
 def answer_query(documents, model, query):
     context = get_context(documents)
-    
+
     # Debug print to check context
     print("\nRetrieved Context:")
     print("=================")
     print(context)
     print("=================\n")
-    
+
     prompt = ChatPromptTemplate.from_template(custom_prompt_template)
     chain = prompt | model
 
