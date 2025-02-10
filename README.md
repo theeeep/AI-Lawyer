@@ -19,7 +19,7 @@ AI Lawyer is an intelligent document analysis system that allows users to upload
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/theeeep/AI-Lawyer.git
    cd ai-lawyer
    ```
 
