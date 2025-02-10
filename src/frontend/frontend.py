@@ -1,5 +1,12 @@
 import streamlit as st
 
+import sys
+import os
+
+# Add the project root to Python path
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(project_root)
+
 from src.backend.rag_pipeline import answer_query, llm_model, retreive_docs
 
 upload_file = st.file_uploader("Upload file", type="pdf", accept_multiple_files=False)
@@ -9,6 +16,17 @@ user_query = st.text_area(
 )
 
 ask_question = st.button("Ask AI Laywer")
+
+if upload_file:
+    # Save the uploaded file
+    from src.backend.vector_db import upload_pdf, process_uploaded_document
+    upload_pdf(upload_file)
+    
+    # Process the uploaded document
+    file_path = f"pdfs/{upload_file.name}"
+    with st.spinner('Processing document...'):
+        process_uploaded_document(file_path)
+    st.success('Document processed successfully!')
 
 if ask_question:
     if upload_file:

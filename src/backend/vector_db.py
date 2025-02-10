@@ -21,20 +21,30 @@ def load_pdf(file_path):
     return documents
 
 
-file_path = "universal_declaration_of_human_rights.pdf"
-documents = load_pdf(file_path)
-
+# Process uploaded document
+def process_uploaded_document(file_path):
+    # Load the PDF
+    documents = load_pdf(file_path)
+    
+    # Create chunks from the documents
+    text_chunks = create_chunks(documents)
+    
+    # Create and save vector database
+    embeddings = get_embedding_model(ollama_model)
+    faiss_db = FAISS.from_documents(text_chunks, embeddings)
+    
+    # Save with proper serialization settings
+    faiss_db.save_local(FAISS_DB_PATH)
+    return faiss_db
 
 # Create Chunks
-def create_chinks(documents):
+def create_chunks(documents):
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=1000, chunk_overlap=200, add_start_index=True
     )
     text_chunks = text_splitter.split_documents(documents)
     return text_chunks
 
-
-text_chunks = create_chinks(documents)
 
 # Embedding Models
 ollama_model = "deepseek-r1:1.5b"
@@ -46,7 +56,5 @@ def get_embedding_model(ollama_model):
     return embeddings
 
 
-# Index Documents and store in VectorDB (FAISS)
+# Path for storing the vector database
 FAISS_DB_PATH = "vectorstore/db_faiss"
-faiss_db = FAISS.from_documents(text_chunks, get_embedding_model(ollama_model))
-faiss_db.save_local(FAISS_DB_PATH)
